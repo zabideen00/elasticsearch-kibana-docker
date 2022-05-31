@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - xpack.security.enabled=true
+      - discovery.type=single-node
+    volumes:
+      - ek-volume:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - ek-network
+      
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.0
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_USERNAME="kibana_system"
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD}
+    volumes:
+      - kibana-volume:/usr/share/kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - ek-network
+
+volumes:
+  ek-volume:
+    name: ek-volume
+
+  kibana-volume:
+    name: kibana-volume
+
+networks:
+  ek-network:
+    name: ek-network
